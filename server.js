@@ -8,6 +8,18 @@ const swaggerDocs = require('./api/openapi.json'); // Assuming you have your swa
 const swaggerJsDoc = require('swagger-jsdoc');
 // const Service = require('./services/Service')
 // const NotificationHandler = require('./services/NotificationHandler')
+// app.js or server.js
+const { connectDB } = require('./db');
+
+const port = process.env.PORT || 3000;
+
+connectDB().then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}).catch(err => {
+  console.error('Failed to start server', err);
+});
 
 // const plugins = require('./plugins/plugins')
 
