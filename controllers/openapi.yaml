@@ -1,0 +1,502 @@
+openapi: 3.0.0
+info:
+  description: >-
+    This is the API documentation for the Electric Power Vending System, allowing for customer management, meter handling, payments, tariffs, and transactions.
+  title: Electric Power Vending System API
+  version: 1.0.0
+servers:
+- url: 'http://0.0.0.0:3000/api-docs'
+paths:
+  /auth:
+    post:
+      operationId: authenticateUser
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object'
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  example: user@example.com
+                  type: string
+                password:
+                  example: password123
+                  type: string
+              required:
+              - email
+              - password
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+          description: User authenticated successfully
+        '400':
+          description: Invalid credentials
+      summary: Authenticate user
+      tags:
+      - Authentication
+      x-eov-operation-handler: controllers/AuthenticationController
+      parameters:
+      - description: Comma-separated properties to be provided in response
+        in: query
+        name: fields
+        schema:
+          type: string
+        allowReserved: true
+  /customers:
+    get:
+      operationId: getAllCustomers
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Customer'
+                type: array
+          description: List of customers
+      summary: Get all customers
+      tags:
+      - Customers
+      x-eov-operation-handler: controllers/CustomersController
+      parameters:
+      - description: >-
+          Comma-separated properties for sorting (prefix with '-' for descending
+        in: query
+        name: sort
+        schema:
+          type: string
+        allowReserved: true
+      - in: query
+        name: _dynamic_params
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+        style: form
+        explode: true
+      - in: query
+        name: filter
+        schema:
+          type: string
+    post:
+      operationId: createCustomer
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object_1'
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  example: John Doe
+                  type: string
+                email:
+                  example: john@example.com
+                  type: string
+                phone:
+                  example: 123456789
+                  type: string
+                address:
+                  example: '123 Main St, City, Country'
+                  type: string
+                password:
+                  example: securepassword123
+                  type: string
+              required:
+              - address
+              - email
+              - name
+              - password
+              - phone
+              type: object
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: Customer created successfully
+        '400':
+          description: Invalid data
+      summary: Create a new customer
+      tags:
+      - Customers
+      x-eov-operation-handler: controllers/CustomersController
+      parameters:
+      - description: Comma-separated properties to be provided in response
+        in: query
+        name: fields
+        schema:
+          type: string
+        allowReserved: true
+  /customers/{id}:
+    get:
+      operationId: getCustomerById
+      parameters:
+      - description: Customer ID
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - in: query
+        name: _dynamic_params
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+        style: form
+        explode: true
+      - in: query
+        name: filter
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: Customer details
+        '404':
+          description: Customer not found
+      summary: Get customer by ID
+      tags:
+      - Customers
+      x-eov-operation-handler: controllers/CustomersController
+  /meters:
+    get:
+      operationId: getAllMeters
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Meter'
+                type: array
+          description: List of meters
+      summary: Get all meters
+      tags:
+      - Meters
+      x-eov-operation-handler: controllers/MetersController
+      parameters:
+      - description: >-
+          Comma-separated properties for sorting (prefix with '-' for descending
+        in: query
+        name: sort
+        schema:
+          type: string
+        allowReserved: true
+      - in: query
+        name: _dynamic_params
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+        style: form
+        explode: true
+      - in: query
+        name: filter
+        schema:
+          type: string
+  /transactions:
+    post:
+      operationId: createTransaction
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object_2'
+        content:
+          application/json:
+            schema:
+              properties:
+                customerId:
+                  example: 6095e2f8f4893c6b2b3a7cf0
+                  type: string
+                amount:
+                  example: 100
+                  type: number
+                paymentMethod:
+                  example: credit_card
+                  type: string
+              required:
+              - amount
+              - customerId
+              - paymentMethod
+              type: object
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: Transaction created successfully
+      summary: Create a new transaction
+      tags:
+      - Transactions
+      x-eov-operation-handler: controllers/TransactionsController
+      parameters:
+      - description: Comma-separated properties to be provided in response
+        in: query
+        name: fields
+        schema:
+          type: string
+        allowReserved: true
+  /payments:
+    post:
+      operationId: processPayment
+      requestBody:
+        $ref: '#/components/requestBodies/inline_object_3'
+        content:
+          application/json:
+            schema:
+              properties:
+                transactionId:
+                  example: 6095e2f8f4893c6b2b3a7cf0
+                  type: string
+                amount:
+                  example: 100
+                  type: number
+              required:
+              - amount
+              - transactionId
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+          description: Payment processed successfully
+      summary: Process a payment
+      tags:
+      - Payments
+      x-eov-operation-handler: controllers/PaymentsController
+      parameters:
+      - description: Comma-separated properties to be provided in response
+        in: query
+        name: fields
+        schema:
+          type: string
+        allowReserved: true
+  /tariffs:
+    get:
+      operationId: getAllTariffs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Tariff'
+                type: array
+          description: List of tariffs
+      summary: Get all tariffs
+      tags:
+      - Tariffs
+      x-eov-operation-handler: controllers/TariffsController
+      parameters:
+      - description: >-
+          Comma-separated properties for sorting (prefix with '-' for descending
+        in: query
+        name: sort
+        schema:
+          type: string
+        allowReserved: true
+      - in: query
+        name: _dynamic_params
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+        style: form
+        explode: true
+      - in: query
+        name: filter
+        schema:
+          type: string
+components:
+  requestBodies:
+    inline_object_1:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object_1'
+      required: true
+    inline_object:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object'
+      required: true
+    inline_object_3:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object_3'
+      required: true
+    inline_object_2:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/inline_object_2'
+      required: true
+  schemas:
+    Customer:
+      example:
+        address: address
+        phone: phone
+        name: name
+        id: id
+        email: email
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+      type: object
+    Meter:
+      example:
+        customerId: customerId
+        reading: 0.8008281904610115
+        id: id
+        status: status
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        status:
+          type: string
+        reading:
+          type: number
+      type: object
+    Transaction:
+      example:
+        amount: 0.8008281904610115
+        customerId: customerId
+        paymentMethod: paymentMethod
+        id: id
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        amount:
+          type: number
+        paymentMethod:
+          type: string
+      type: object
+    Payment:
+      example:
+        amount: 0.8008281904610115
+        id: id
+        transactionId: transactionId
+        status: status
+      properties:
+        id:
+          type: string
+        transactionId:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+      type: object
+    Tariff:
+      example:
+        rate: 0.8008281904610115
+        name: name
+        id: id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        rate:
+          type: number
+      type: object
+    inline_object:
+      properties:
+        email:
+          example: user@example.com
+          type: string
+        password:
+          example: password123
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    inline_response_200:
+      example:
+        token: token
+      properties:
+        token:
+          type: string
+    inline_object_1:
+      properties:
+        name:
+          example: John Doe
+          type: string
+        email:
+          example: john@example.com
+          type: string
+        phone:
+          example: 123456789
+          type: string
+        address:
+          example: '123 Main St, City, Country'
+          type: string
+        password:
+          example: securepassword123
+          type: string
+      required:
+      - address
+      - email
+      - name
+      - password
+      - phone
+      type: object
+    inline_object_2:
+      properties:
+        customerId:
+          example: 6095e2f8f4893c6b2b3a7cf0
+          type: string
+        amount:
+          example: 100
+          type: number
+        paymentMethod:
+          example: credit_card
+          type: string
+      required:
+      - amount
+      - customerId
+      - paymentMethod
+      type: object
+    inline_object_3:
+      properties:
+        transactionId:
+          example: 6095e2f8f4893c6b2b3a7cf0
+          type: string
+        amount:
+          example: 100
+          type: number
+      required:
+      - amount
+      - transactionId
+      type: object
